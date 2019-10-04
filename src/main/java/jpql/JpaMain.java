@@ -14,25 +14,31 @@ public class JpaMain {
         tx.begin();
 
         try {
+            Team team = new Team();
+            team.setName("teamA");
+            em.persist(team);
 
-            Member member = new Member();
-            member.setUsername("member1");
-            member.setAge(10);
-            em.persist(member);
+            Member member1 = new Member();
+            member1.setUsername("관리자1");
+            em.persist(member1);
+
+            Member member2 = new Member();
+            member2.setUsername("관리자2");
+            em.persist(member2);
+
 
             em.flush();
             em.clear();
 
-            List<MemberDTO> resultList = em.createQuery("select distinct new jpql.MemberDTO(m.username, m.age) from Member m", MemberDTO.class)
-                    .getResultList();
+            String query = "select function('group_concat', m.username) from Member m";
+            List<String> resultList = em.createQuery(query, String.class).getResultList();
 
-            MemberDTO result = resultList.get(0);
-            System.out.println("result = " + result.getUsername());
-            System.out.println("result = " + result.getAge());
+            resultList.forEach(e -> System.out.println("result : " + e));
 
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
+            e.printStackTrace();
         } finally {
             em.close();
         }
